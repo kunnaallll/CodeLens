@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/algorithms/', include('algorithms.urls')),
     path('api/progress/', include('progress.urls')),
+    path('api/analytics/', include('analytics.urls')),
 ]
