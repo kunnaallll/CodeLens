@@ -317,13 +317,14 @@ The app is now available at `http://localhost:5173` (Vite) or `http://localhost:
 
 ## API Overview
 
-> Proposed endpoints. Final routes may change during development.
+Authentication endpoints are implemented under `/api/auth/`. Registration creates a student account; admins are assigned through Django's `is_staff` permission rather than public registration.
 
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
 | POST | `/api/auth/register/` | Register a new student | Public |
 | POST | `/api/auth/login/` | Obtain JWT access/refresh tokens | Public |
-| POST | `/api/auth/token/refresh/` | Refresh access token | Authenticated |
+| POST | `/api/auth/token/refresh/` | Refresh access token | Refresh token |
+| GET | `/api/auth/profile/` | Get the signed-in user's profile and role | Authenticated |
 | GET | `/api/algorithms/` | List algorithms | Authenticated |
 | GET | `/api/algorithms/{id}/` | Algorithm details and steps | Authenticated |
 | GET | `/api/challenges/` | List challenges | Authenticated |
@@ -331,6 +332,8 @@ The app is now available at `http://localhost:5173` (Vite) or `http://localhost:
 | GET | `/api/progress/` | Current user's progress | Student |
 | GET | `/api/scores/` | Current user's scores | Student |
 | POST | `/api/algorithms/` | Create an algorithm | Admin |
+
+Send the access token with protected API requests using `Authorization: Bearer <access-token>`. The frontend keeps tokens in session storage and clears them on sign-out.
 
 ---
 
