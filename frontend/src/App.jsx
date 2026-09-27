@@ -11,8 +11,14 @@ async function request(path, options = {}) {
   })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) {
-    const message = Object.values(payload).flat().find((item) => typeof item === 'string')
-    const error = new Error(message || 'Something went wrong. Please try again.')
+    const messages = []
+    function collectMessages(value) {
+      if (typeof value === 'string') messages.push(value)
+      else if (Array.isArray(value)) value.forEach(collectMessages)
+      else if (value && typeof value === 'object') Object.values(value).forEach(collectMessages)
+    }
+    collectMessages(payload)
+    const error = new Error(messages.join(' ') || `Request failed (${response.status}${response.statusText ? ` ${response.statusText}` : ''}).`)
     error.status = response.status
     throw error
   }
