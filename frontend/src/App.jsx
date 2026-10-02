@@ -35,6 +35,7 @@ function App() {
   const [error, setError] = useState('')
   const [path, setPath] = useState(window.location.pathname)
   const [algorithmResult, setAlgorithmResult] = useState(null)
+  const [visualizerState, setVisualizerState] = useState({ input: '5, 3, 8, 1', result: null, stepIndex: 0, error: '', playing: false, generating: false })
 
   useEffect(() => {
     const onPopState = () => setPath(window.location.pathname)
@@ -82,7 +83,7 @@ function App() {
   }, [tokens])
 
   useEffect(() => {
-    const nextPath = !loading && !user && path === '/dashboard'
+    const nextPath = !loading && !user && (path === '/dashboard' || path === '/algorithms/bubble-sort')
       ? '/login'
       : !loading && user && (path === '/' || path === '/login') ? '/dashboard' : null
     if (nextPath) {
@@ -148,7 +149,11 @@ function App() {
   if (loading) return <main className="auth-shell"><p className="loading">Loading your account…</p></main>
 
   if (user && path === '/dashboard') return (
-    <Dashboard user={user} algorithms={algorithmResult?.algorithms || []} loading={!algorithmResult} error={algorithmResult?.error || ''} onSignOut={signOut} />
+    <Dashboard user={user} algorithms={algorithmResult?.algorithms || []} loading={!algorithmResult} error={algorithmResult?.error || ''} onSignOut={signOut} onSelectAlgorithm={() => navigate('/algorithms/bubble-sort')} />
+  )
+
+  if (user && path === '/algorithms/bubble-sort') return (
+    <BubbleSortVisualizer tokens={tokens} state={visualizerState} setState={setVisualizerState} onBack={() => navigate('/dashboard')} />
   )
 
   return (
@@ -184,7 +189,7 @@ function App() {
   )
 }
 
-function Dashboard({ user, algorithms, loading, error, onSignOut }) {
+function Dashboard({ user, algorithms, loading, error, onSignOut, onSelectAlgorithm }) {
   const name = user.first_name || user.username
   return (
     <div className="dashboard-shell">
@@ -192,7 +197,7 @@ function Dashboard({ user, algorithms, loading, error, onSignOut }) {
         <a className="dashboard-brand" href="/dashboard"><span className="brand-mark">C</span><span>CodeLens</span></a>
         <p className="sidebar-label">WORKSPACE</p>
         <nav className="side-nav" aria-label="Main navigation">
-          <a className="selected" href="/dashboard"><span>▦</span> Overview</a>
+        <a className="selected" href="/dashboard"><span>▦</span> Overview</a>
           <a href="#algorithms"><span>⌘</span> Algorithms</a>
           <a href="#progress"><span>◷</span> My progress</a>
         </nav>
@@ -216,7 +221,7 @@ function Dashboard({ user, algorithms, loading, error, onSignOut }) {
             {loading && <div className="state-panel" role="status"><span className="spinner" /> Loading algorithms…</div>}
             {!loading && error && <div className="state-panel api-error" role="alert"><strong>We couldn’t load the algorithms.</strong><span>{error}</span></div>}
             {!loading && !error && algorithms.length === 0 && <div className="state-panel">No algorithms are available yet. Check back soon.</div>}
-            {!loading && !error && algorithms.length > 0 && <div className="algorithm-grid">{algorithms.map((algorithm) => <AlgorithmCard key={algorithm.id} algorithm={algorithm} />)}</div>}
+            {!loading && !error && algorithms.length > 0 && <div className="algorithm-grid">{algorithms.map((algorithm) => <AlgorithmCard key={algorithm.id} algorithm={algorithm} onSelect={onSelectAlgorithm} />)}</div>}
           </section>
         </div>
       </main>
@@ -224,8 +229,46 @@ function Dashboard({ user, algorithms, loading, error, onSignOut }) {
   )
 }
 
-function AlgorithmCard({ algorithm }) {
-  return <article className="algorithm-card"><div className="algorithm-card-top"><span className="algorithm-symbol">{algorithm.name.slice(0, 1).toUpperCase()}</span><span className="category-chip">{algorithm.category}</span></div><h3>{algorithm.name}</h3><p>{algorithm.description}</p><div className="complexities"><span><small>TIME</small><strong>{algorithm.time_complexity}</strong></span><span><small>SPACE</small><strong>{algorithm.space_complexity}</strong></span></div><button type="button" className="card-action" aria-label={`Explore ${algorithm.name}`}>Explore algorithm <span>→</span></button></article>
+function AlgorithmCard({ algorithm, onSelect }) {
+  const isBubbleSort = algorithm.name.toLowerCase() === 'bubble sort'
+  return <article className="algorithm-card"><div className="algorithm-card-top"><span className="algorithm-symbol">{algorithm.name.slice(0, 1).toUpperCase()}</span><span className="category-chip">{algorithm.category}</span></div><h3>{algorithm.name}</h3><p>{algorithm.description}</p><div className="complexities"><span><small>TIME</small><strong>{algorithm.time_complexity}</strong></span><span><small>SPACE</small><strong>{algorithm.space_complexity}</strong></span></div><button type="button" className="card-action" aria-label={`Explore ${algorithm.name}`} disabled={!isBubbleSort} onClick={isBubbleSort ? onSelect : undefined}>{isBubbleSort ? 'Explore algorithm' : 'Coming soon'} <span>→</span></button></article>
+}
+
+function BubbleSortVisualizer({ tokens, state, setState, onBack }) {
+  const current = state.result?.steps[state.stepIndex]
+  const lastIndex = (state.result?.steps.length || 1) - 1
+
+  useEffect(() => {
+    if (!state.playing || !state.result) return undefined
+    if (state.stepIndex >= lastIndex) {
+      setState((previous) => ({ ...previous, playing: false }))
+      return undefined
+    }
+    const timer = window.setTimeout(() => setState((previous) => ({ ...previous, stepIndex: previous.stepIndex + 1 })), 850)
+    return () => window.clearTimeout(timer)
+  }, [state.playing, state.result, state.stepIndex, lastIndex, setState])
+
+  async function generate(event) {
+    event.preventDefault()
+    const values = state.input.split(',').map((value) => value.trim()).filter(Boolean).map(Number)
+    if (!values.length || values.some((value) => !Number.isFinite(value))) {
+      setState((previous) => ({ ...previous, error: 'Enter one or more numbers separated by commas.' }))
+      return
+    }
+    setState((previous) => ({ ...previous, error: '', playing: false, generating: true }))
+    try {
+      const result = await request('/api/algorithms/bubble-sort/steps/', {
+        method: 'POST', headers: { Authorization: `Bearer ${tokens.access}` }, body: JSON.stringify({ array: values }),
+      })
+      setState((previous) => ({ ...previous, result, stepIndex: 0, playing: false, generating: false, error: '' }))
+    } catch (error) {
+      setState((previous) => ({ ...previous, generating: false, error: error.message || 'Unable to generate steps.' }))
+    }
+  }
+
+  function update(patch) { setState((previous) => ({ ...previous, ...patch })) }
+  const compared = current?.compared || []
+  return <div className="dashboard-shell"><aside className="sidebar"><a className="dashboard-brand" href="/dashboard" onClick={(event) => { event.preventDefault(); onBack() }}><span className="brand-mark">C</span><span>CodeLens</span></a><p className="sidebar-label">WORKSPACE</p><nav className="side-nav"><button type="button" className="selected" onClick={onBack}>← Dashboard</button></nav></aside><main className="dashboard-main"><header className="topbar"><span>Workspace <b>/</b> Algorithms <b>/</b> Bubble Sort</span><button className="back-button" onClick={onBack}>← Back to dashboard</button></header><div className="visualizer-content"><div className="section-heading"><div><p className="section-kicker">ALGORITHM VISUALIZER</p><h1>Bubble Sort</h1><p>Watch adjacent values move into order, one comparison at a time.</p></div></div><section className="visualizer-card"><form className="array-form" onSubmit={generate}><label htmlFor="array-input">Array values</label><div><input id="array-input" value={state.input} onChange={(event) => update({ input: event.target.value })} placeholder="e.g. 5, 3, 8, 1"/><button className="primary-button" type="submit" disabled={state.generating}>{state.generating ? 'Generating…' : 'Generate / Start'}</button></div><small>Enter numbers separated by commas.</small></form>{state.error && <p className="error-message" role="alert">{state.error}</p>}<div className="array-stage" aria-live="polite">{current ? current.array.map((value, index) => <div key={`${index}-${value}`} className={`array-item ${compared.includes(index) ? (current.swapped ? 'swapped' : 'compared') : ''}`}><strong>{value}</strong><small>index {index}</small></div>) : <p className="empty-array">Generate an array to begin the visualization.</p>}</div><div className="step-description"><span className="operation-icon">{current?.swapped ? '↔' : '⌕'}</span><div><small>CURRENT OPERATION</small><strong>{current?.description || 'Ready when you are'}</strong></div><span className="step-counter">Step {current ? state.stepIndex + 1 : 0} / {state.result?.steps.length || 0}</span></div><div className="playback-controls"><button type="button" onClick={() => update({ stepIndex: 0, playing: false })} disabled={!state.result}>Reset</button><div><button type="button" onClick={() => update({ stepIndex: Math.max(0, state.stepIndex - 1), playing: false })} disabled={!state.result || state.stepIndex === 0}>← Previous</button><button className="play-button" type="button" onClick={() => update({ playing: !state.playing })} disabled={!state.result || (state.stepIndex === lastIndex && !state.playing)}>{state.playing ? 'Ⅱ Pause' : '▶ Play'}</button><button type="button" onClick={() => update({ stepIndex: Math.min(lastIndex, state.stepIndex + 1), playing: false })} disabled={!state.result || state.stepIndex === lastIndex}>Next →</button></div></div></section><section className="complexity-panel"><p className="section-kicker">COMPLEXITY</p><div><span>Best<strong>O(n)</strong></span><span>Average<strong>O(n²)</strong></span><span>Worst<strong>O(n²)</strong></span><span>Space<strong>O(1)</strong></span></div></section></div></main></div>
 }
 
 export default App
