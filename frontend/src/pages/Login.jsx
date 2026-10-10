@@ -63,11 +63,6 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="mt-4 rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-500">
-        Demo accounts — student: <span className="font-mono">demo / Demo@12345</span> · admin:{" "}
-        <span className="font-mono">admin / Admin@12345</span>
-      </div>
-
       <p className="mt-5 text-center text-sm text-ink-500">
         Don't have an account?{" "}
         <Link to="/register" className="font-semibold text-brand-600 hover:underline">

@@ -23,10 +23,6 @@ export default function ChallengeDetail() {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    if (challenge && !selectedAlgorithm) setSelectedAlgorithm(challenge.allowed_algorithms[0] || "");
-  }, [challenge, selectedAlgorithm]);
-
-  useEffect(() => {
     if (!startedAt) return;
     timerRef.current = setInterval(() => setElapsed((Date.now() - startedAt) / 1000), 200);
     return () => clearInterval(timerRef.current);
@@ -89,7 +85,7 @@ export default function ChallengeDetail() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="w-56">
             <label className="label">Choose an algorithm</label>
-            <select className="input" value={selectedAlgorithm} onChange={(e) => setSelectedAlgorithm(e.target.value)} disabled={!!startedAt}>
+              <select className="input" value={selectedAlgorithm || challenge.allowed_algorithms[0] || ""} onChange={(e) => setSelectedAlgorithm(e.target.value)} disabled={!!startedAt}>
               {challenge.allowed_algorithms.map((slugOption) => (
                 <option key={slugOption} value={slugOption}>{slugOption}</option>
               ))}

@@ -1,0 +1,3 @@
+export const CATEGORY_LABELS = { SORTING: "Sorting", SEARCHING: "Searching", GRAPH: "Graph", sorting: "Sorting", searching: "Searching", graph: "Graph", Sorting: "Sorting", Searching: "Searching", Graph: "Graph" };
+export const CATEGORY_STYLES = { SORTING: "badge-purple", SEARCHING: "badge-blue", GRAPH: "badge-green", sorting: "badge-purple", searching: "badge-blue", graph: "badge-green", Sorting: "badge-purple", Searching: "badge-blue", Graph: "badge-green" };
+export const DIFFICULTY_STYLES = { EASY: "badge-green", MEDIUM: "badge-amber", HARD: "badge-red", easy: "badge-green", medium: "badge-amber", hard: "badge-red", "—": "badge-neutral" };

@@ -134,6 +134,57 @@
   .shell-caption { bottom: 10px; padding: 0 14px; font-size: 11px; }
 }
 
+.app-frame { min-height: 100vh; }
+.app-header { min-height: 64px; display: flex; align-items: center; gap: 28px; padding: 10px max(20px, calc((100vw - 1160px) / 2)); border-bottom: 1px solid #e9e7f0; background: #fff; }
+.app-header nav { display: flex; gap: 20px; flex: 1; }
+.app-header a { color: #49445f; text-decoration: none; }
+.app-header a:hover { color: #5945d3; }
+.topbar-user { display: flex; align-items: center; gap: 14px; }
+.topbar-user button { border: 0; color: #5945d3; background: transparent; cursor: pointer; font: inherit; }
+.app-content { width: min(1160px, calc(100% - 40px)); margin: 34px auto; }
+.app-content h1, .app-content h2, .app-content h3 { color: #211f31; }
+.app-content input, .app-content select { padding: 10px 12px; border: 1px solid #dfdce9; border-radius: 8px; }
+.app-content button:disabled { opacity: .5; cursor: not-allowed; }
+.dashboard-content, .visualizer-content { display: grid; gap: 24px; }
+.welcome-banner, .stat-card, .algorithm-card, .state-panel, .card, .visualizer-card, .complexity-panel { padding: 22px; border: 1px solid #e9e7f0; border-radius: 15px; background: #fff; }
+.welcome-banner { background: linear-gradient(120deg, #f1edff, #fbfaff); }
+.welcome-banner h1, .section-heading h1 { margin: 4px 0 8px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.stat-card { display: grid; gap: 10px; }
+.stat-card strong { font-size: 28px; }
+.stat-label, .section-kicker { color: #756c99; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.algorithms-section { display: grid; gap: 16px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.algorithm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.algorithm-card { display: grid; gap: 12px; }
+.algorithm-card h3, .algorithm-card p { margin: 0; }
+.complexities { display: flex; gap: 24px; }
+.complexities span, .complexity-panel span { display: grid; gap: 4px; }
+.complexities small { color: #777488; font-size: 10px; }
+.card-action { display: inline-block; padding-top: 8px; border: 0; color: #5945d3; text-align: left; text-decoration: none; background: none; }
+.visualizer-card { display: grid; gap: 18px; }
+.array-form { display: grid; gap: 8px; }
+.array-form > div { display: flex; gap: 10px; }
+.array-form input { flex: 1; min-width: 0; }
+.array-stage { display: flex; min-height: 150px; align-items: end; justify-content: center; gap: 10px; padding: 20px; border-radius: 12px; background: #f8f7fc; }
+.array-item { display: grid; width: 58px; min-height: 72px; place-items: center; align-content: center; gap: 8px; border-radius: 10px; color: #32276f; background: #e9e4ff; }
+.array-item small { color: #777488; font-size: 10px; }
+.array-item.compared { background: #ffe8a8; }
+.array-item.swapped { color: #702e19; background: #ffc9af; }
+.step-description, .playback-controls, .playback-controls > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.step-description > span:first-child { display: grid; gap: 5px; }
+.step-description small { color: #777488; }
+.playback-controls button { padding: 8px 12px; border: 1px solid #dfdce9; border-radius: 8px; color: #49445f; background: #fff; cursor: pointer; }
+.playback-controls .play-button, .primary-button, .btn-primary { color: #fff; background: #5945d3; }
+.primary-button { display: flex; justify-content: center; align-items: center; padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; }
+.complexity-panel > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.complexity-panel strong { font-family: ui-monospace, monospace; }
+.api-error, .error-message { color: #9f322a; }
+.api-note { padding: 10px; border-radius: 8px; color: #704b0b; background: #fff5d8; }
+.badge { display: inline-block; width: fit-content; padding: 4px 8px; border-radius: 999px; color: #5140a0; background: #eeeaff; font-size: 12px; }
+.badge-neutral { color: #555; background: #eee; }
+@media (max-width: 640px) { .app-header { flex-wrap: wrap; gap: 12px; } .app-header nav { order: 3; width: 100%; justify-content: space-around; } .app-content { margin: 22px auto; } .stats-grid, .complexity-panel > div { grid-template-columns: repeat(2, 1fr); } .array-form > div { align-items: stretch; flex-direction: column; } }
+
 @media (max-width: 950px) {
   .dashboard-shell { grid-template-columns: 205px minmax(0, 1fr); }
   .dashboard-content { width: calc(100% - 48px); }

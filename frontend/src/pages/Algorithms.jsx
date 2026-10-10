@@ -7,8 +7,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useFetch } from "../hooks/useFetch";
 import { listAlgorithms } from "../services/algorithms";
 
-const CATEGORIES = ["ALL", "SORTING", "SEARCHING", "GRAPH"];
-const DIFFICULTIES = ["ALL", "EASY", "MEDIUM", "HARD"];
+const CATEGORIES = ["ALL", "sorting", "searching", "graph"];
+const DIFFICULTIES = ["ALL", "easy", "medium", "hard"];
 
 export default function Algorithms() {
   const { data, loading, error, refetch } = useFetch(() => listAlgorithms(), []);
@@ -16,16 +16,15 @@ export default function Algorithms() {
   const [category, setCategory] = useState("ALL");
   const [difficulty, setDifficulty] = useState("ALL");
 
-  const algorithms = data?.results || data || [];
-
   const filtered = useMemo(() => {
+    const algorithms = data?.results || data || [];
     return algorithms.filter((a) => {
       const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = category === "ALL" || a.category === category;
-      const matchesDifficulty = difficulty === "ALL" || a.difficulty === difficulty;
+      const matchesCategory = category === "ALL" || a.category.toLowerCase() === category;
+      const matchesDifficulty = difficulty === "ALL" || a.difficulty.toLowerCase() === difficulty;
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
-  }, [algorithms, search, category, difficulty]);
+  }, [data, search, category, difficulty]);
 
   if (loading) return <LoadingSpinner label="Loading algorithms..." />;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;

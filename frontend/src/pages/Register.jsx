@@ -16,6 +16,10 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (form.password !== form.password_confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
