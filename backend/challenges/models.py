@@ -10,6 +10,10 @@ class Challenge(models.Model):
     points = models.IntegerField(default=10)
     input_data = models.TextField(blank=True, default="")
     expected_output = models.TextField(blank=True, default="")
+    topic = models.CharField(max_length=100, default='sorting')
+    expected_answer = models.JSONField(default=list)
+    best_algorithm = models.CharField(max_length=100, blank=True)
+    time_limit_seconds = models.PositiveIntegerField(default=60)
 
     def __str__(self):
         return self.title
