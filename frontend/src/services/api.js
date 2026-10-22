@@ -16,7 +16,17 @@ export async function apiRequest(path, options = {}) {
     ...options,
     headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(access ? { Authorization: `Bearer ${access}` } : {}), ...options.headers },
   });
-  let response = await send(tokens?.access);
+  let response;
+  try {
+    response = await send(tokens?.access);
+  } catch (error) {
+    // Keep connection failures distinct from invalid credentials so local
+    // setup problems are actionable from the sign-in screen.
+    if (error instanceof TypeError) {
+      throw new Error(`Cannot reach the CodeLens API at ${API_URL}. Start the Django server and try again.`, { cause: error });
+    }
+    throw error;
+  }
   if (response.status === 401 && tokens?.refresh && !path.includes("token/refresh")) {
     const refreshed = await fetch(`${API_URL}/api/auth/token/refresh/`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refresh: tokens.refresh }) });
     if (refreshed.ok) {
@@ -35,6 +45,14 @@ export async function apiRequest(path, options = {}) {
     throw error;
   }
   return payload;
+}
+
+export function revokeRefreshToken(refresh) {
+  return fetch(`${API_URL}/api/auth/logout/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
+  });
 }
 
 export { TOKEN_KEY };

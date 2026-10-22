@@ -19,9 +19,9 @@ export default function Algorithms() {
   const filtered = useMemo(() => {
     const algorithms = data?.results || data || [];
     return algorithms.filter((a) => {
-      const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = category === "ALL" || a.category.toLowerCase() === category;
-      const matchesDifficulty = difficulty === "ALL" || a.difficulty.toLowerCase() === difficulty;
+      const matchesSearch = (a.name || "").toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = category === "ALL" || (a.category || "").toLowerCase() === category;
+      const matchesDifficulty = difficulty === "ALL" || (a.difficulty || "").toLowerCase() === difficulty;
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
   }, [data, search, category, difficulty]);
@@ -30,25 +30,27 @@ export default function Algorithms() {
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-ink-900">Algorithm Library</h1>
-        <p className="text-sm text-ink-500">Browse and visualize sorting, searching, and graph algorithms.</p>
-      </div>
+    <div className="page-stack">
+      <header className="page-heading">
+        <p className="section-kicker">THE ALGORITHM LIBRARY</p>
+        <h1>Learn how algorithms work</h1>
+        <p>Browse the collection, then open an algorithm to follow its steps.</p>
+      </header>
 
-      <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+      <div className="filter-bar">
         <input
-          className="input sm:max-w-xs"
+          aria-label="Search algorithms"
+          type="search"
           placeholder="Search algorithms..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <select className="input sm:max-w-[160px]" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select aria-label="Filter by category" value={category} onChange={(e) => setCategory(e.target.value)}>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c === "ALL" ? "All Categories" : c}</option>
           ))}
         </select>
-        <select className="input sm:max-w-[160px]" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+        <select aria-label="Filter by difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           {DIFFICULTIES.map((d) => (
             <option key={d} value={d}>{d === "ALL" ? "All Difficulties" : d}</option>
           ))}
@@ -58,7 +60,7 @@ export default function Algorithms() {
       {filtered.length === 0 ? (
         <EmptyState title="No algorithms match your filters" description="Try adjusting your search or filters." />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="library-grid">
           {filtered.map((algo) => (
             <AlgorithmCard key={algo.slug} algorithm={algo} />
           ))}

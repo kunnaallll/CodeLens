@@ -2,10 +2,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import generics, serializers
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 User = get_user_model()
@@ -57,12 +59,54 @@ class ProfileView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        user = request.user
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "role": "admin" if user.is_staff else "student",
-        })
+        return Response(ProfileSerializer(request.user).data)
+
+    def patch(self, request):
+        serializer = ProfileSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class LogoutView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        raw_refresh = request.data.get('refresh')
+        if not raw_refresh:
+            raise serializers.ValidationError({'refresh': 'A refresh token is required.'})
+        try:
+            refresh = RefreshToken(raw_refresh)
+        except TokenError as error:
+            raise serializers.ValidationError({'refresh': 'The refresh token is invalid or expired.'}) from error
+        refresh.blacklist()
+        return Response(status=205)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'bio', 'role', 'date_joined')
+        read_only_fields = ('id', 'username', 'role', 'date_joined')
+
+    def get_role(self, obj):
+        return 'admin' if obj.is_staff else 'student'
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'date_joined', 'is_active')
+
+    def get_role(self, obj):
+        return 'admin' if obj.is_staff else 'student'
+
+
+class AdminUserListView(generics.ListAPIView):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = AdminUserSerializer
+    permission_classes = (IsAdminUser,)

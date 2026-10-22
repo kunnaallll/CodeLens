@@ -19,13 +19,12 @@ export default function Challenges() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-ink-900">Challenges</h1>
-        <p className="text-sm text-ink-500">
-          Practice solving challenges and check your answers.
-        </p>
-      </div>
+    <div className="page-stack">
+      <header className="page-heading">
+        <p className="section-kicker">PRACTICE ARENA</p>
+        <h1>Challenges</h1>
+        <p>Apply what you have learned and see how your solution scores.</p>
+      </header>
 
       {challenges.length === 0 ? (
         <EmptyState
@@ -33,9 +32,9 @@ export default function Challenges() {
           description="Try again later."
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="library-grid">
           {challenges.map((challenge) => (
-            <article key={challenge.id} className="card p-5">
+            <article key={challenge.id} className="algorithm-card">
               <span className="badge badge-neutral">
                 {challenge.difficulty}
               </span>
@@ -46,7 +45,7 @@ export default function Challenges() {
 
               <Link
                 to={`/challenges/${challenge.id}`}
-                className="mt-4 inline-block text-brand-600 hover:underline"
+                className="card-action"
               >
                 Open Challenge →
               </Link>

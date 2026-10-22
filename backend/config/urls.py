@@ -17,11 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from algorithms.views import DataStructureDetailView, DataStructureListCreateView
+from .views import home
 
 urlpatterns = [
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/algorithms/', include('algorithms.urls')),
     path('api/progress/', include('progress.urls')),
     path('api/challenges/', include('challenges.urls')),
+    path('api/data-structures/', DataStructureListCreateView.as_view(), name='data-structure-list'),
+    path('api/data-structures/<str:lookup>/', DataStructureDetailView.as_view(), name='data-structure-detail'),
+    path('api/analytics/', include('analytics.urls')),
+    path('api/achievements/', include('progress.achievement_urls')),
+    path('api/scores/', include('progress.score_urls')),
 ]

@@ -1,28 +1,31 @@
-import TiltCard from "./TiltCard";
+const ICONS = {
+  book: "📘",
+  target: "🎯",
+  star: "⭐",
+  flame: "🔥",
+  calendar: "🗓️",
+};
 
-export default function AchievementCard({ achievement }) {
+export default function AchievementCard({ achievement, progress }) {
   const unlocked = achievement.unlocked;
+  const percent = progress ? Math.min(100, Math.round((progress.current / progress.goal) * 100)) : 0;
+  const date = achievement.unlocked_at
+    ? new Date(achievement.unlocked_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+    : null;
+
   return (
-    <TiltCard
-      max={unlocked ? 6 : 2}
-      glare={unlocked}
-      className={`card flex items-center gap-4 p-4 ${unlocked ? "animate-pop-in hover:shadow-card-hover" : "opacity-60 grayscale"}`}
-    >
-      <div
-        className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl ${unlocked ? "bg-amber-100" : "bg-ink-100"}`}
-        style={unlocked ? { transform: "translateZ(24px)" } : undefined}
-      >
-        {achievement.icon}
+    <article className={`achievement-card ${unlocked ? "is-unlocked" : "is-locked"}`}>
+      <div className="achievement-icon" aria-hidden="true">{ICONS[achievement.icon] || "🏅"}</div>
+      <div className="achievement-body">
+        <div className="achievement-title-row"><h2>{achievement.name}</h2><span className={`achievement-state ${unlocked ? "earned" : "locked"}`}>{unlocked ? "Earned" : "In progress"}</span></div>
+        <p>{achievement.description}</p>
+        {!unlocked && progress && <div className="achievement-progress" aria-label={`${progress.current} of ${progress.goal} progress`}>
+          <div className="achievement-progress-label"><span>{progress.label}</span><strong>{progress.current} / {progress.goal}</strong></div>
+          <div className="achievement-progress-track"><span style={{ width: `${percent}%` }} /></div>
+        </div>}
+        {date && <small className="achievement-date">Unlocked {date}</small>}
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold text-ink-900">{achievement.name}</p>
-        <p className="truncate text-sm text-ink-500">{achievement.description}</p>
-      </div>
-      {unlocked ? (
-        <span className="badge bg-emerald-100 text-emerald-700">Unlocked</span>
-      ) : (
-        <span className="badge bg-ink-100 text-ink-500">Locked</span>
-      )}
-    </TiltCard>
+      <span className="achievement-check" aria-hidden="true">{unlocked ? "✓" : "·"}</span>
+    </article>
   );
 }

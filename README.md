@@ -3,7 +3,7 @@
 **An interactive programming education platform that turns algorithm execution into a visual, step-by-step learning experience.**
 
 ![React](https://img.shields.io/badge/Frontend-React.js-61DAFB?logo=react&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![CSS](https://img.shields.io/badge/Styling-Responsive_CSS-663399)
 ![Django](https://img.shields.io/badge/Backend-Django-092E20?logo=django&logoColor=white)
 ![DRF](https://img.shields.io/badge/API-Django_REST_Framework-A30000)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
@@ -32,6 +32,10 @@
 
 CodeLens is a full-stack web platform that helps students understand data structures and algorithms by *watching* them run. Instead of reading static pseudocode, learners step through each comparison, swap and traversal, then test their understanding through graded challenges and track their growth on a personal analytics dashboard.
 
+## Team contribution: Shweta — Django Backend + PostgreSQL Developer
+
+Shweta's primary responsibility is the server side: Django models and relationships, PostgreSQL configuration, REST APIs, authentication and permissions, progress APIs, analytics APIs, and Django Admin. She implements the persistence and API integration used by the algorithm, data-structure, challenge, submission, scoring, achievement, and user modules. Challenge design, scoring rules, and analytics product requirements are shared with Het's challenge and analytics role; Shweta owns their backend API and database integration. Students can access learning content and their own activity, while staff-only endpoints manage platform content and inspect submissions and users.
+
 The platform combines:
 
 - Algorithm visualization
@@ -56,7 +60,7 @@ The core feature of CodeLens. Each algorithm is broken into discrete steps that 
 | Category | Algorithms |
 |----------|------------|
 | Sorting | Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Quick Sort |
-| Searching | Binary Search |
+| Searching | Linear Search, Binary Search |
 | Graph Traversal | BFS, DFS |
 
 Example (Bubble Sort):
@@ -72,11 +76,15 @@ Interactive, operation-driven views of core data structures.
 | Structure | Operations |
 |-----------|------------|
 | Stack | Push, Pop, Peek |
+| Queue | Enqueue, Dequeue, Front |
 | Linked List | Insert, Delete, Traverse |
 | Binary Tree | Insert, Delete, Traversals |
 
 ### Code Playground
-A split-pane editor and output view with predefined Java and Python algorithm templates. The initial scope uses curated templates rather than a full online compiler.
+A code editor and output view with predefined Java and Python algorithm templates. The initial scope uses curated templates rather than a full online compiler.
+
+### Test Case Runner
+Run built-in cases for mixed, sorted, and repeated values. The runner reports the expected and actual output for each case.
 
 ### Complexity Analyzer
 After an algorithm runs, CodeLens reports:
@@ -119,10 +127,10 @@ Administrators can manage all platform content and users:
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | Frontend | React.js | UI and interactive visualizations |
-| Styling | Tailwind CSS | Modern, responsive design |
+| Styling | Responsive CSS design system | Modern, responsive design |
 | Routing | React Router | Client-side page navigation |
-| HTTP Client | Axios | React ↔ Django communication |
-| Charts | Recharts | Student analytics |
+| HTTP Client | Browser Fetch API | React ↔ Django communication |
+| Charts | Responsive SVG | Student analytics |
 | Backend | Django | Server-side application logic |
 | REST API | Django REST Framework | API layer for the React client |
 | Database | PostgreSQL | Users, algorithms, challenges, progress, scores |
@@ -135,7 +143,7 @@ Administrators can manage all platform content and users:
 
 ```mermaid
 flowchart TD
-    A[React.js Frontend<br/>Tailwind CSS · React Router · Axios] -->|HTTP / REST API| B[Django REST Framework]
+    A[React.js Frontend<br/>Responsive CSS · React Router · Fetch API · SVG charts] -->|HTTP / REST API| B[Django REST Framework]
     B --> C[Authentication]
     B --> D[Algorithms]
     B --> E[Challenges]
@@ -238,7 +246,9 @@ codelens/
 │       │   ├── mergeSort.js
 │       │   └── quickSort.js
 │       ├── services/
-│       │   └── api.js               # Axios instance and API calls
+│       │   ├── api.js               # Fetch-based API calls and JWT handling
+│       │   ├── challenges.js
+│       │   └── analytics.js
 │       ├── context/
 │       │   └── AuthContext.jsx
 │       └── App.jsx
@@ -261,7 +271,7 @@ codelens/
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 20+ and npm
 - Python 3.10+
 - PostgreSQL 14+
 
@@ -278,14 +288,13 @@ cd codelens
 cd backend
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
-pip install django djangorestframework djangorestframework-simplejwt \
-            psycopg2-binary django-cors-headers
+pip install -r requirements.txt
 ```
 
-Create a PostgreSQL database, then configure `config/settings.py` (or a `.env` file) with your credentials:
+Create a PostgreSQL database, then copy `.env.example` to `.env` in the repository root and set your local database password and Django secret key:
 
 ```
-DB_NAME=codelens
+DB_NAME=codelens_db
 DB_USER=postgres
 DB_PASSWORD=your_password
 DB_HOST=localhost
@@ -307,11 +316,10 @@ The API is now available at `http://localhost:8000`.
 ```bash
 cd frontend
 npm install
-npm install axios react-router-dom recharts
-npm run dev                        # or: npm start
+npm run dev
 ```
 
-The app is now available at `http://localhost:5173` (Vite) or `http://localhost:3000` (Create React App).
+The app is now available at `http://localhost:5173` (Vite).
 
 ---
 
@@ -323,15 +331,24 @@ Authentication endpoints are implemented under `/api/auth/`. Registration create
 |--------|----------|-------------|--------|
 | POST | `/api/auth/register/` | Register a new student | Public |
 | POST | `/api/auth/login/` | Obtain JWT access/refresh tokens | Public |
+| POST | `/api/auth/logout/` | Revoke the submitted refresh token | Refresh token |
 | POST | `/api/auth/token/refresh/` | Refresh access token | Refresh token |
 | GET | `/api/auth/profile/` | Get the signed-in user's profile and role | Authenticated |
+| GET | `/api/auth/users/` | List accounts for the admin panel | Admin |
 | GET | `/api/algorithms/` | List algorithms | Authenticated |
 | GET | `/api/algorithms/{id}/` | Algorithm details and steps | Authenticated |
+| GET | `/api/data-structures/` | List data-structure guides | Authenticated |
 | GET | `/api/challenges/` | List challenges | Authenticated |
 | POST | `/api/challenges/{id}/submit/` | Submit a challenge attempt | Student |
 | GET | `/api/progress/` | Current user's progress | Student |
+| GET | `/api/progress/summary/` | Current user's completion, score, and streak summary | Student |
+| GET | `/api/progress/leaderboard/` | Score rankings (`?period=weekly` for seven days) | Authenticated |
+| GET | `/api/analytics/` | Current user's activity and performance metrics | Student |
+| GET | `/api/achievements/` | Achievement catalog and current user's unlocks | Authenticated |
 | GET | `/api/scores/` | Current user's scores | Student |
 | POST | `/api/algorithms/` | Create an algorithm | Admin |
+| POST | `/api/data-structures/` | Create data-structure content | Admin |
+| POST | `/api/challenges/` | Create a challenge | Admin |
 
 Send the access token with protected API requests using `Authorization: Bearer <access-token>`. The frontend keeps tokens in session storage and clears them on sign-out.
 
@@ -339,18 +356,20 @@ Send the access token with protected API requests using `Authorization: Bearer <
 
 ## Roadmap
 
-- [ ] Project setup (React + Django + PostgreSQL)
-- [ ] JWT authentication with role-based access
-- [ ] Sorting visualizer (Bubble, Selection, Insertion)
-- [ ] Merge Sort, Quick Sort and Binary Search visualizers
-- [ ] BFS and DFS graph visualizers
-- [ ] Data-structure visualizers (Stack, Linked List, Binary Tree)
-- [ ] Complexity analyzer
-- [ ] Challenge mode with scoring
-- [ ] Student dashboard and analytics
-- [ ] Admin content management
-- [ ] Code playground with Java/Python templates
-- [ ] Achievements and streak system
+- [x] Project setup (React + Django + PostgreSQL configuration)
+- [x] JWT authentication with role-based access
+- [x] Sorting visualizer (Bubble, Selection, Insertion)
+- [x] Merge Sort, Quick Sort and Binary Search visualizers
+- [x] BFS and DFS graph visualizers
+- [x] Data-structure visualizers (Stack, Queue, Linked List, Doubly Linked List, Binary Search Tree)
+- [x] Complexity analyzer
+- [x] Challenge mode with server-side scoring and pseudocode checks
+- [x] Student dashboard and analytics
+- [x] Admin content management
+- [x] Code playground with Java/Python starter templates and built-in test cases
+- [x] Achievements and streak system
+
+The playground uses curated starter code and runs CodeLens's built-in Bubble Sort implementation; it does not execute arbitrary submitted source code.
 
 
 

@@ -14,35 +14,32 @@ export default function Analytics() {
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-ink-900">Analytics</h1>
-        <p className="text-sm text-ink-500">Your learning patterns, generated from real activity.</p>
-      </div>
+    <div className="analytics-page">
+      <header className="page-heading"><p className="section-kicker">YOUR LEARNING DATA</p><h1>Analytics</h1><p>Your learning patterns, generated from real activity.</p></header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="card p-5">
-          <p className="text-xs text-ink-400">Overall Accuracy</p>
+      <div className="analytics-stats">
+        <div className="analytics-stat">
+          <p>Overall accuracy</p>
           <p className="text-2xl font-bold text-ink-900">{analytics.accuracy}%</p>
         </div>
-        <div className="card p-5">
-          <p className="text-xs text-ink-400">Weak Areas</p>
+        <div className="analytics-stat">
+          <p>Weak areas</p>
           <p className="text-lg font-semibold text-rose-600">{analytics.weak_areas.join(", ") || "None — great job!"}</p>
         </div>
-        <div className="card p-5">
-          <p className="text-xs text-ink-400">Submissions Tracked</p>
+        <div className="analytics-stat">
+          <p>Submissions tracked</p>
           <p className="text-2xl font-bold text-ink-900">{analytics.score_history.length}</p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="analytics-chart-grid">
         <ChartCard title="Weekly Activity" isEmpty={!analytics.has_data}>
           <WeeklyActivityChart data={analytics.weekly_activity} />
         </ChartCard>
         <ChartCard title="Score History" isEmpty={analytics.score_history.length === 0}>
           <ScoreHistoryChart data={analytics.score_history} />
         </ChartCard>
-        <ChartCard title="Algorithm Completion by Category" isEmpty={!analytics.has_data}>
+        <ChartCard title="Algorithm Completion by Category" isEmpty={!analytics.algorithm_completion.some((item) => item.total)}>
           <TopicPerformanceChart data={analytics.algorithm_completion} dataKey="completed" nameKey="category" label="Completed" />
         </ChartCard>
         <ChartCard title="Challenge Performance by Difficulty" isEmpty={analytics.score_history.length === 0}>

@@ -1,16 +1,22 @@
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
 export default function ScoreHistoryChart({ data }) {
-  const formatted = data.map((d, i) => ({ ...d, index: i + 1 }));
+  const width = 640, height = 220;
+  const inset = { top: 14, right: 18, bottom: 30, left: 34 };
+  const plotWidth = width - inset.left - inset.right;
+  const plotHeight = height - inset.top - inset.bottom;
+  const points = data.map((item, index) => ({
+    ...item,
+    x: inset.left + (data.length === 1 ? plotWidth / 2 : index * plotWidth / Math.max(1, data.length - 1)),
+    y: inset.top + plotHeight * (1 - Math.max(0, Math.min(100, item.score)) / 100),
+  }));
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <LineChart data={formatted}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-        <XAxis dataKey="index" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} label={{ value: "Attempt #", position: "insideBottom", offset: -2, fontSize: 11 }} />
-        <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
-        <Tooltip formatter={(value, _name, item) => [`${value} pts`, item.payload.challenge]} />
-        <Line type="monotone" dataKey="score" stroke="#4f46e5" strokeWidth={2.5} dot={{ r: 4, fill: "#4f46e5" }} name="Score" />
-      </LineChart>
-    </ResponsiveContainer>
+    <svg className="analytics-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Challenge score history, from 0 to 100 points">
+      {[0, 25, 50, 75, 100].map((score) => {
+        const y = inset.top + plotHeight * (1 - score / 100);
+        return <g key={score}><line x1={inset.left} x2={width - inset.right} y1={y} y2={y} stroke="#e6e4ed" strokeDasharray="4 4" /><text x={inset.left - 7} y={y + 4} textAnchor="end" fill="#77768b" fontSize="10">{score}</text></g>;
+      })}
+      {points.length > 1 && <polyline points={line} fill="none" stroke="#5945d3" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />}
+      {points.map((point, index) => <g key={`${point.date}-${index}`}><circle cx={point.x} cy={point.y} r="5" fill="#5945d3"><title>{point.challenge}: {point.score}/100 ({point.date})</title></circle><text x={point.x} y={height - 8} textAnchor="middle" fill="#77768b" fontSize="10">{index + 1}</text></g>)}
+    </svg>
   );
 }

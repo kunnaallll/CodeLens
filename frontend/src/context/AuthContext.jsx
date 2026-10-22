@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { apiRequest, TOKEN_KEY } from "../services/api";
+import { apiRequest, revokeRefreshToken, TOKEN_KEY } from "../services/api";
 import { AuthContext } from "./AuthContextValue";
 
 export function AuthProvider({ children }) {
@@ -33,7 +33,15 @@ export function AuthProvider({ children }) {
     void ignored;
     return apiRequest("/api/auth/register/", { method: "POST", body: JSON.stringify(payload) });
   }, []);
-  const logout = useCallback(() => { sessionStorage.removeItem(TOKEN_KEY); setUser(null); }, []);
+  const logout = useCallback(() => {
+    let tokens;
+    try { tokens = JSON.parse(sessionStorage.getItem(TOKEN_KEY)); } catch { tokens = null; }
+    if (tokens?.refresh) {
+      void revokeRefreshToken(tokens.refresh).catch(() => {});
+    }
+    sessionStorage.removeItem(TOKEN_KEY);
+    setUser(null);
+  }, []);
   const value = useMemo(() => ({ user, loading, login, register, logout, isAuthenticated: Boolean(user), isAdmin: user?.role === "admin", refreshProfile: () => setRevision((n) => n + 1) }), [user, loading, login, register, logout]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

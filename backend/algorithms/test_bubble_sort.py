@@ -1,26 +1,19 @@
-from bubble_sort import bubble_sort_steps
+from django.test import SimpleTestCase
+
+from .bubble_sort import bubble_sort_steps
 
 
-numbers = [5, 3, 8, 1]
+class BubbleSortStepsTests(SimpleTestCase):
+    def test_generates_sorted_final_state_and_counts_operations(self):
+        result = bubble_sort_steps([5, 3, 8, 1])
 
-result = bubble_sort_steps(numbers)
+        self.assertEqual(result['steps'][-1]['array'], [1, 3, 5, 8])
+        self.assertGreater(result['comparisons'], 0)
+        self.assertGreater(result['swaps'], 0)
 
-print("Algorithm:", result["algorithm"])
-print("Input:", result["input"])
+    def test_does_not_mutate_the_input(self):
+        values = [5, 3, 8, 1]
 
-print("\nSteps:")
+        bubble_sort_steps(values)
 
-for index, step in enumerate(result["steps"]):
-    print(f"Step {index}: {step['array']}")
-    print(f"Description: {step['description']}")
-
-print("\nComparisons:", result["comparisons"])
-print("Swaps:", result["swaps"])
-
-print("\nTime Complexity:")
-print("Best:", result["time_complexity"]["best"])
-print("Average:", result["time_complexity"]["average"])
-print("Worst:", result["time_complexity"]["worst"])
-
-print("\nSpace Complexity:")
-print(result["space_complexity"])
+        self.assertEqual(values, [5, 3, 8, 1])
